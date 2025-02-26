@@ -87,3 +87,6 @@ export class productManager{
         
     }
 }
+
+
+//integrar a mongoose

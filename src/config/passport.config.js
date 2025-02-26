@@ -3,11 +3,10 @@ dotenv.config()
 import passport from 'passport'
 import { Strategy as LocalStrategy } from 'passport-local'
 import { Strategy as JWTStrategy, ExtractJwt } from 'passport-jwt'
-import bcrypt from 'bcrypt'
 import User from '../dao/models/user.model.js'
 import { createHash, verifyPassword } from '../utils/hash.js'
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET
 
 function initializePassport() {
     passport.use(
@@ -18,30 +17,34 @@ function initializePassport() {
                 passReqToCallback: true,
             },
             async (req, email, password, done) => {
-                const { firstName, lastName, age } = req.body
+                const { first_name, last_name, age } = req.body
 
-                if (!email || !password || !firstName || !lastName) {
+                if (!email || !password || !first_name || !last_name || !age) {
                     return done(null, false, { message: 'All fields are required' })
                 }
 
-                const hashedPassword = createHash(password)
+                
 
                 try {
+                    
+                    const hashedPassword = await createHash(password)
+                    
                     const user = await User.create({
+                        first_name,
+                        last_name,
                         email,
-                        password: hashedPassword,
-                        first_name: firstName,
-                        last_name: lastName,
                         age,
+                        password: hashedPassword 
                     })
 
                     return done(null, user)
                 } catch (error) {
+                    console.log("Error en la creación del usuario:", error)
                     return done(error)
                 }
             }
         )
-    )
+    );
 
     passport.use(
         'login',
@@ -51,13 +54,13 @@ function initializePassport() {
             },
             async (email, password, done) => {
                 try {
-                    const user = await User.findOne({email})
+                    const user = await User.findOne({ email })
 
-                    if (!user) return done(null, false, {message: 'User not found'})
+                    if (!user) return done(null, false, { message: 'User not found' })
 
                     const isValidPassword = await verifyPassword(password, user.password)
 
-                    if (!isValidPassword) return done(null, false, {message: 'Invalid password'});
+                    if (!isValidPassword) return done(null, false, { message: 'Invalid password' })
 
                     return done(null, user)
                 } catch (error) {
@@ -90,17 +93,17 @@ function initializePassport() {
         done(null, user._id)
     })
 
-    passport.deserializeUser(async (id, done) =>{
+    passport.deserializeUser(async (id, done) => {
         try {
             const user = await User.findById(id)
             return done(null, user)
-        } catch (error){
+        } catch (error) {
             return done(`Hubo un error: ${error.message}`)
         }
     })
 }
 
-function cookieExtractor(req){
+function cookieExtractor(req) {
     let token = null
 
     if (req && req.cookies) {

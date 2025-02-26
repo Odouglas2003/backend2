@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 
 export const connectMongoDB = async  () => {
     
-    mongoose.connect("mongodb+srv://octaviodouglas200:%3CToty753159%3E@octavioeze21.yzh5b.mongodb.net/Servidor")
+    mongoose.connect("mongodb+srv://Rubik:rubikoctasol@octavioeze21.yzh5b.mongodb.net/Servidor")
 
     .then(() => console.log("MongoDB Connected..."))
     .catch(err => console.log(err)); 

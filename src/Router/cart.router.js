@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import { cartDao } from '../dao/mongoDao/cart.dao.js'
 import { productDao } from '../dao/mongoDao/poducts.dao.js'
+import {OrderController} from '../controller/order.controller.js'
+
 
 const router = Router()
 
@@ -140,6 +142,8 @@ router.delete('/:cid', async (req, res) => {
         res.send(err.message)
     }
 })
+
+router.post('/:cid/purchase', OrderController.create)
 
 
 export default router
