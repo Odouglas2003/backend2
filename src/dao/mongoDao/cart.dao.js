@@ -1,4 +1,4 @@
-import { cartModel } from "../models/cart.model.js"; // ✅ Importación corregida
+import cartModel from "../models/cart.model.js"; // ✅ Importación corregida
 
 class CartDao {
     async getAll() {
