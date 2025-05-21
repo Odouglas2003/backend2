@@ -1,18 +1,20 @@
 import express from "express"
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
-import userRoutes from './router/user.router.js'
-import productsRoutes from './router/products.router.js'
-import cartRoutes from './router/cart.router.js'
-import { connectMongoDB } from "./config/mongoDB.config.js"
-import { initializePassport } from './config/passport.config.js'
 import passport from 'passport'
 import dotenv from 'dotenv'
-import { AuthController } from './controller/auth.controller.js'
-import { validateDto } from "./dao/middlewares/validateDto.middleware.js"
+
+import userRoutes from './Router/user.router.js'
+import productsRoutes from './router/products.router.js'
+import cartRoutes from './router/cart.router.js'
 import userDto from './dtos/user.dto.js'
-import { log, logger } from "./config/logger.js"
 import mocksRouter from './router/mock.router.js'
+import swaggerDocs from './config/swagger.config.js'
+
+import { connectMongoDB } from "./config/mongoDB.config.js"
+import { initializePassport } from './config/passport.config.js'
+import { log, logger } from "./config/logger.js"
+
 
 // Cargar variables de entorno
 dotenv.config()
@@ -30,54 +32,15 @@ app.use(log) // Middleware de logueo para cada petición que se haga en el servi
 initializePassport() // Inicializar Passport
 app.use(passport.initialize())
 
-app.use('/index', express.static("public")) // Utilizar archivos HTML, CSS 
-
-app.use((req, res, next) => {
-    logger.info("Ruta a nivel app ejecutándose")
-    next() // Una vez que se ejecuta, sale de la función y continúa con el resto de los endpoint
-})
+app.use('/index', express.static("public")) // Utilizar archivos HTML, CSS y JS estáticos
 
 // Rutas
 app.use("/api/users", userRoutes)
 app.use("/api/products", productsRoutes)
 app.use("/api/carts", cartRoutes)
-app.use('/api/mocks', mocksRouter);
+app.use('/api/mocks', mocksRouter)
 
-
-// Rutas de autenticación
-app.post('/register', validateDto(userDto), (req, res, next) => {
-    passport.authenticate('register', (err, user, info) => {
-        if (err) {
-            return next(err)
-        }
-        if (!user) {
-            return res.status(400).json({ message: info.message })
-        }
-        req.user = user
-        AuthController.register(req, res)
-    })(req, res, next)
-})
-
-app.post('/login', (req, res, next) => {
-    passport.authenticate('login', (err, user, info) => {
-        if (err) {
-            return next(err)
-        }
-        if (!user) {
-            return res.status(400).json({ message: info.message })
-        }
-        req.user = user
-        AuthController.login(req, res);
-    })(req, res, next)
-});
-
-app.get('/api/sessions/current', passport.authenticate('current', { session: false }), (req, res) => {
-    AuthController.current(req, res)
-})
-
-app.get('/test', (req, res) => {
-    res.send('LA PRUEBA FUNCIONA')
-});
+swaggerDocs(app) // Documentación de la API
 
 app.use((err, req, res, next) => {
     console.log(err.stack);
@@ -88,4 +51,8 @@ const PORT = process.env.PORT || 5000 // Puerto dinámico
 // El puerto que usamos es para asegurarnos que no se esté usando
 app.listen(PORT, () => {
     logger.info(`Servidor iniciado en el puerto ${PORT}`)
+    logger.info("Ruta a nivel app ejecutándose")
 })
+
+
+export default app // Exportar la app para usarla en los tests
